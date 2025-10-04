@@ -1,0 +1,17 @@
+name: voltron-vpn-server
+services:
+  - name: vpn-service
+    image:
+      docker:
+        image: ubuntu:22.04
+    ports:
+      - port: 22
+        protocol: TCP
+        http: false
+      - port: 53  
+        protocol: UDP
+        http: false
+      - port: 80
+        protocol: HTTP
+      - port: 443
+        protocol: HTTP
