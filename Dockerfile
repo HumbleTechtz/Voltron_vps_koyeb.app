@@ -14,12 +14,12 @@ RUN apt-get update && apt-get install -y \
 # Setup SSH Server
 RUN mkdir -p /var/run/sshd
 RUN echo 'root:Voltron2024!' | chpasswd
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PermitRootLogin prohibit-ssh/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#Port 22/Port 22/' /etc/ssh/sshd_config
 
-# Download and install SlowDNS
-RUN wget -q https://github.com/kkkgo/unlock-SlowDNS/raw/main/slowdns -O /usr/bin/slowdns
+# Download and install SlowDNS - FIXED URL
+RUN wget -q https://raw.githubusercontent.com/kkkgo/unlock-SlowDNS/main/slowdns -O /usr/bin/slowdns
 RUN chmod +x /usr/bin/slowdns
 
 # Create startup script - USING YOUR DOMAIN & PRE-GENERATED KEYS
@@ -44,7 +44,7 @@ echo "💡 Share PRIVATE KEY with VPN users!"\n\
 # Start SlowDNS with YOUR DOMAIN\n\
 echo "🚀 Starting SlowDNS on port 53..."\n\
 echo "📍 Using Domain: voltrongroup.duckdns.org"\n\
-/usr/bin/slowdns -udp 53 -pubkey "V0xUUk9OMjAyNHNsb3dkbnN2cG5rZXlzZWN1cmU=" -ns "ns.voltrongroup.duckdns.org" -domain "voltrongroup.duckdns.org" -l 0.0.0.0:53 &\n\
+/usr/bin/slowdns -udp 53 -pubkey "V0xUUk9OMjAyNHNsb3dkbnN2cG5rZXlzZWN1cmU=" -ns "ns.voltrongroup.duckdns.org" -domain "voltrongroup.duckdns.org" &\n\
 \n\
 echo "✅ VOLTRON VPN SERVER IS RUNNING!"\n\
 echo "📍 SSH Access: ssh root@your-koyeb-ip -p 22"\n\
