@@ -1,6 +1,6 @@
-name: voltron-ubuntu-vps
+name: ubuntu-full-os
 services:
-  - name: ubuntu-vps
+  - name: ubuntu-os
     image:
       docker:
         image: ubuntu:22.04
@@ -12,4 +12,4 @@ services:
     health_checks:
       - type: tcp
         port: 8000
-        timeout_seconds: 5
+        timeout_seconds: 10
