@@ -1,6 +1,6 @@
-name: voltron-ssh-server
+name: voltron-ubuntu-vps
 services:
-  - name: ssh-service
+  - name: ubuntu-vps
     image:
       docker:
         image: ubuntu:22.04
