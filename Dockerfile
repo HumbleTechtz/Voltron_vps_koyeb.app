@@ -1,28 +1,25 @@
 FROM ubuntu:22.04
 
-# Install SSH
-RUN apt-get update && apt-get install -y openssh-server
+# Install SSH + Python for health check
+RUN apt-get update && apt-get install -y openssh-server python3
 
 # Setup SSH
-RUN mkdir /var/run/sshd
-RUN echo 'root:Voltron2024!' | chpasswd
+RUN mkdir -p /var/run/sshd
+RUN echo 'root:password' | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#Port 22/Port 22/' /etc/ssh/sshd_config
+RUN sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config
+RUN ssh-keygen -A
 
-# Create simple web server for health check (port 8000)
-RUN apt-get install -y python3
-RUN echo '#!/usr/bin/python3\nimport http.server\nimport socketserver\n\nPORT = 8000\n\nclass HealthHandler(http.server.SimpleHTTPRequestHandler):\n    def do_GET(self):\n        self.send_response(200)\n        self.end_headers()\n        self.wfile.write(b"OK")\n\nwith socketserver.TCPServer(("", PORT), HealthHandler) as httpd:\n    print(f"Health check server on port {PORT}")\n    httpd.serve_forever()' > /health_check.py
+# Create health check server on port 8000
+RUN echo '#!/usr/bin/python3\nimport socket\nimport time\n\nserver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nserver.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)\nserver.bind(("0.0.0.0", 8000))\nserver.listen(1)\nprint("Health check server running on port 8000")\nwhile True:\n    conn, addr = server.accept()\n    conn.send(b"OK")\n    conn.close()' > /health_server.py
 
-# Start both SSH and health check
-RUN echo '#!/bin/bash\n\
-echo "Starting health check server on port 8000..."\n\
-python3 /health_check.py &\n\
-sleep 2\n\
-echo "Starting SSH server on port 22..."\n\
-/usr/sbin/sshd -D\n\
-wait' > /start.sh
+# Startup script
+RUN echo '#!/bin/bash\n\necho "Starting health check server on port 8000..."\npython3 /health_server.py &\n\nsleep 2\n\necho "Starting SSH server on port 22..."\n/usr/sbin/sshd -D &\n\necho "✅ Both services running!"\necho "📍 SSH: port 22 (user: root, password: password)"\necho "📍 Health: port 8000"\n\nwait' > /start.sh
 
 RUN chmod +x /start.sh
 
 EXPOSE 22 8000
+
 CMD ["/bin/bash", "/start.sh"]
